@@ -1,9 +1,15 @@
+// Kayro Danyell Alves - 1381452
+// Wagner Cipriano da Silva - Desenvolvimento de Aplicações Distribuidas
+// Atividade de mensageria com kafka
 package org.example;
 
 import java.util.*;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.*;
+import org.apache.kafka.common.serialization.StringSerializer;
 
 public class Main {
     public static void main(String[] args) {
@@ -14,11 +20,12 @@ public class Main {
         props.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" " +
                 "password=\"Endpoint=sb://kayro-dad.servicebus.windows.net/;SharedAccessKeyName=kayroDad;SharedAccessKey=+dau2ikplIAJcp7zcUMFItso1KeY76XZ7+AEhA4qwUw=;EntityPath=kayro-dad-kafka\";");
 
-        Producer<String, String> producer = new KafkaProducer<>(props);
+        Producer<String, String> producer = new KafkaProducer<>(props,new StringSerializer(), new StringSerializer());
 
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         try {
-            String messageJson = objectMapper.writeValueAsString(new Message("Kayro Danyell Alves", "1381452@sga.pucminas.br", 4));
+            String messageJson = objectMapper.writeValueAsString(new Message("Kayro Danyell Alves", "1381452@sga.pucminas.br", 3));
             ProducerRecord<String, String> record = new ProducerRecord<>("kayro-dad", messageJson);
             producer.send(record, (metadata, exception) -> {
                 if (metadata != null) {
@@ -32,17 +39,5 @@ public class Main {
         } finally {
             producer.close();
         }
-    }
-}
-
-class Message {
-    private String name;
-    private String login_id;
-    private int group;
-
-    public Message(String name, String login_id, int group) {
-        this.name = name;
-        this.login_id = login_id;
-        this.group = group;
     }
 }
